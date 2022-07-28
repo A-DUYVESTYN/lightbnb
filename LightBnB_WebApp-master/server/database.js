@@ -179,15 +179,15 @@ exports.getAllProperties = getAllProperties;
  * @return {Promise<{}>} A promise to the property.
  */
 const addProperty = function(property) {
-  
-  console.log(Object.values(property))
-  console.log(Object.keys(property))
+
+  const columnNames = Object.keys(property);
+  const columnValues = Object.values(property);
+  // create list of $ placeholder parameters same size as values
+  const placeholders = columnValues.map( (_, i) => "$" + (i+1)).join(", ");
 
   return pool
   .query(
-    `INSERT INTO properties (${Object.keys(property)}) VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14) RETURNING *;`,
-    Object.values(property))
-  
+    `INSERT INTO properties (${columnNames}) VALUES(${placeholders}) RETURNING *;`, columnValues)
   .then((result) => {
     console.log(result.rows);
     return result.rows
@@ -195,11 +195,6 @@ const addProperty = function(property) {
   .catch((err) => {
     console.log(err.message);
   });
-
-  // const propertyId = Object.keys(properties).length + 1;
-  // property.id = propertyId;
-  // properties[propertyId] = property;
-  // return Promise.resolve(property);
-}
+};
 exports.addProperty = addProperty;
 
