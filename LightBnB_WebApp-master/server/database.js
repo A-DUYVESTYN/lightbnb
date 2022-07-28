@@ -126,24 +126,20 @@ const getAllProperties = (options, limit = 10) => {
   `;
   // 3
   if (options.city) {
-    console.log('queryParams.length: ',queryParams.length)
     queryParams.push(`%${options.city}%`);
     queryString += `WHERE city LIKE $${queryParams.length} `;
   }
   if (options.owner_id) {
-    console.log('queryParams.length: ',queryParams.length)
     queryString += (queryParams.length) ? `AND` : `WHERE`
-    queryParams.push(options.owner_id);
+    queryParams.push(Number(options.owner_id));
     queryString += ` owner_id = $${queryParams.length} `;
   }
   if (options.minimum_price_per_night) {
-    console.log('queryParams.length: ',queryParams.length)
     queryString += (queryParams.length) ? `AND` : `WHERE`
     queryParams.push(options.minimum_price_per_night * 100);
     queryString += ` cost_per_night >= $${queryParams.length} `;
   }
   if (options.maximum_price_per_night) {
-    console.log('queryParams.length: ',queryParams.length)
     queryString += (queryParams.length) ? `AND` : `WHERE`
     queryParams.push(options.maximum_price_per_night * 100);
     queryString += ` cost_per_night <= $${queryParams.length} `;
@@ -183,9 +179,27 @@ exports.getAllProperties = getAllProperties;
  * @return {Promise<{}>} A promise to the property.
  */
 const addProperty = function(property) {
-  const propertyId = Object.keys(properties).length + 1;
-  property.id = propertyId;
-  properties[propertyId] = property;
-  return Promise.resolve(property);
+  
+  console.log(Object.values(property))
+  console.log(Object.keys(property))
+
+  return pool
+  .query(
+    `INSERT INTO properties (${Object.keys(property)}) VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14) RETURNING *;`,
+    Object.values(property))
+  
+  .then((result) => {
+    console.log(result.rows);
+    return result.rows
+  })
+  .catch((err) => {
+    console.log(err.message);
+  });
+
+  // const propertyId = Object.keys(properties).length + 1;
+  // property.id = propertyId;
+  // properties[propertyId] = property;
+  // return Promise.resolve(property);
 }
 exports.addProperty = addProperty;
+
